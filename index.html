@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TAİM // PROJECT ANOMALY</title>
+    <style>
+        :root { --v-green: #00ff41; --v-red: #ff0000; }
+        body, html { margin: 0; padding: 0; background: #000; color: var(--v-green); font-family: 'Courier New', monospace; overflow: hidden; width: 100%; height: 100dvh; }
+        
+        /* VHS EFEKTLERİ */
+        .vhs-lines { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.2) 50%); background-size: 100% 4px; pointer-events: none; z-index: 1000; }
+        #glitch { position: fixed; top:0; left:0; width:100%; height:100%; background: #200; z-index: 9999; display:none; color: white; justify-content:center; align-items:center; text-align:center; flex-direction:column; }
+
+        /* AÇILIŞ VE MENÜ */
+        #boot-loader { padding: 20px; font-size: 14px; }
+        #main-app { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 20px; }
+        #display-container { width: 100%; max-width: 650px; height: 50dvh; border: 2px solid #1a1a1a; background: #050505; position: relative; overflow: hidden; }
+        
+        .btn { background: transparent; border: 1px solid var(--v-green); color: var(--v-green); padding: 12px 24px; margin: 10px; cursor: pointer; text-transform: uppercase; font-family: inherit; font-size: 14px; transition: 0.3s; }
+        .btn:hover { background: var(--v-green); color: #000; box-shadow: 0 0 15px var(--v-green); }
+
+        #typewriter { width: 85%; min-height: 80px; font-size: 17px; margin-bottom: 20px; line-height: 1.6; white-space: pre-wrap; }
+        .hidden { display: none !important; }
+
+        .face-grid { display: grid; grid-template-columns: 1fr 1fr; width: 100%; height: 100%; }
+        .face-grid img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.5) brightness(0.4); border: 1px solid #111; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="glitch"><h1>İHLAL TESPİT EDİLDİ</h1><p>SİSTEM GERİ YÜKLENİYOR...</p></div>
+<div class="vhs-lines"></div>
+
+<div id="boot-loader"></div>
+
+<div id="main-app" class="hidden">
+    <div id="menu-screen" style="text-align: center;">
+        <h1 style="letter-spacing: 15px; text-shadow: 2px 0 var(--v-red); margin-bottom: 5px;">TAİM</h1>
+        <p style="font-size: 10px; opacity: 0.5;">TÜRKİYE ANOMALİ İZLEME MERKEZİ - 1994</p>
+        <div style="max-width: 500px; font-size: 13px; color: #666; margin: 30px auto; border-left: 2px solid #222; padding-left: 15px; text-align: left;">
+            Burası devletin gizli kayıtlarını barındırır. Görevin, fotoğraf ve video kayıtlarındaki anomalileri (kusurları) tespit etmektir. <br><br>
+            UYARI: Gördüğün her şey gerçektir. Zihinsel sağlığın için ekran başından sık sık ayrıl.
+        </div>
+        <button class="btn" onclick="startTest()">DOSYALARI AÇ</button>
+    </div>
+
+    <div id="test-screen" class="hidden" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+        <div id="typewriter"></div>
+        <div id="display-container"></div>
+        <div id="controls" style="margin-top: 20px;"></div>
+    </div>
+</div>
+
+<script>
+    let audioCtx, isTyping = false;
+
+    // AÇILIŞ SEQUENCY
+    const bootLines = [
+        "TAIM(tm) BIOS v4.02 - 1994",
+        "Memory Test: 640KB OK",
+        "Loading Kernel...",
+        "Establishing Connection to Central Archives...",
+        "ACCESS GRANTED.",
+        "Initializing VHS Protocol..."
+    ];
+
+    async function boot() {
+        const loader = document.getElementById('boot-loader');
+        for(let line of bootLines) {
+            const p = document.createElement('p');
+            p.innerText = "> " + line;
+            loader.appendChild(p);
+            await new Promise(r => setTimeout(r, 400));
+        }
+        setTimeout(() => {
+            loader.classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+        }, 1000);
+    }
+    boot();
+
+    function playBip(f, d, v=0.02) {
+        if(!audioCtx) return;
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = 'square'; o.frequency.value = f; g.gain.value = v;
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(); o.stop(audioCtx.currentTime + d);
+    }
+
+    async function writeLog(msg) {
+        isTyping = true;
+        const el = document.getElementById('typewriter');
+        el.innerText = "";
+        const words = msg.split(' ');
+        for (let word of words) {
+            for (let char of word) {
+                el.innerText += char;
+                playBip(400, 0.02);
+                await new Promise(r => setTimeout(r, 40));
+            }
+            el.innerText += " ";
+            await new Promise(r => setTimeout(r, 40));
+        }
+        isTyping = false;
+    }
+
+    const levels = [
+        { 
+            t: "DOSYA #01: Hangisi kayıtlı personel değil?", 
+            type: "faces", 
+            imgs: [
+                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400", 
+                "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400",
+                "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400"
+            ],
+            ans: 1 
+        },
+        { 
+            t: "DOSYA #02: Görüntüdeki anomaliyi (Göz) seçin.", 
+            type: "spot", 
+            img: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=800",
+            target: { t: 45, l: 30, w: 70, h: 70 } // Tıklama alanı büyütüldü ve düzeltildi
+        }
+    ];
+
+    let current = 0;
+
+    function startTest() {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        document.getElementById('menu-screen').classList.add('hidden');
+        document.getElementById('test-screen').classList.remove('hidden');
+        render();
+    }
+
+    async function render() {
+        const lvl = levels[current];
+        const container = document.getElementById('display-container');
+        const controls = document.getElementById('controls');
+        
+        container.innerHTML = "<div style='padding:20px; opacity:0.3;'>ARŞİV ÇEKİLİYOR...</div>";
+        controls.innerHTML = "";
+        
+        await writeLog(lvl.t);
+        container.innerHTML = "";
+
+        if(lvl.type === 'faces') {
+            const grid = document.createElement('div'); grid.className = 'face-grid';
+            lvl.imgs.forEach((src, i) => {
+                const img = document.createElement('img'); img.src = src;
+                img.onclick = () => validate(i === lvl.ans);
+                grid.appendChild(img);
+            });
+            container.appendChild(grid);
+        } else if(lvl.type === 'spot') {
+            // Görüntü ve Tıklama Alanı (Z-Index ve Pozisyon Düzeltmesi)
+            container.innerHTML = `
+                <img src="${lvl.img}" style="width:100%; height:100%; object-fit:cover; filter:grayscale(1) contrast(2);">
+                <div id="target-area" style="position:absolute; top:${lvl.target.t}%; left:${lvl.target.l}%; width:${lvl.target.w}px; height:${lvl.target.h}px; cursor:crosshair; border:1px dashed rgba(0,255,65,0.4); z-index:100;"></div>
+            `;
+            document.getElementById('target-area').onclick = (e) => { e.stopPropagation(); validate(true); };
+            container.onclick = () => validate(false);
+        }
+    }
+
+    function validate(ok) {
+        if(ok) {
+            playBip(800, 0.2);
+            current++;
+            if(current < levels.length) render();
+            else alert("ARŞİV SONU. YENİ DOSYALAR BEKLENİYOR.");
+        } else {
+            const glitch = document.getElementById('glitch');
+            glitch.style.display = 'flex';
+            const itv = setInterval(() => playBip(Math.random()*1000, 0.05, 0.2), 30);
+            setTimeout(() => { clearInterval(itv); location.reload(); }, 1500);
+        }
+    }
+</script>
+</body>
+</html>
